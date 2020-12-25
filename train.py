@@ -17,9 +17,24 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Train:
 	def __init__(self, params):
+		"""
+		args:
+			params: parameters passed in as dict
+		"""
 		self.params = params
+
+		# resize the image or not
+		if params['transform']:
+			transform = transforms.Resize((params['height'],params['width']),
+											interpolation=Image.NEAREST)
+		else:
+			transform = None
+
+		# experiment output folder name
 		self.run_name = params['run_name']
-		self.dataset = SuctionData(params['root_dir'])
+
+		# load dataset and split into test and validation
+		self.dataset = SuctionData(params['root_dir'],transform=transform)
 		data_size = len(self.dataset)
 		indices = list(range(data_size))
 		split = int(np.floor(params['val_split'] * data_size))
@@ -36,6 +51,7 @@ class Train:
 		self.dataloader = {'train': train_loader,
 							'val': val_loader}
 		
+		# init model (use depth input or not)
 		self.use_depth = params['use_depth']
 		if self.use_depth:
 			self.model = SuctionNet(params['height'],params['width']).to(device)
@@ -57,11 +73,11 @@ class Train:
 						'loss': [],
 						'acc': []}
 
-		
-
-
 
 	def create_dirs(self):
+		"""
+		create directories to save model checkpts and logs
+		"""
 		root = self.params['root_dir']
 
 		if not os.path.exists(os.path.join(root,'output')):
@@ -78,6 +94,9 @@ class Train:
 
 
 	def disp_img(self,img):
+		"""
+		save/display debug image
+		"""
 		img = np.squeeze(img)
 		plt.clf()
 		plt.imshow(img, cmap='jet', interpolation='nearest')
@@ -86,6 +105,13 @@ class Train:
 
 
 	def calc_acc(self, label, probs):
+		"""
+		TODO: 
+		Calculate accuracy:
+		Args:
+			label: gt values
+			probs: probabilites output
+		"""
 		pred = np.zeros_like(probs)
 		pred[probs > self.params['threshold']] = 1.
 		total = (pred == 0.).sum() + (pred == 1.).sum()
@@ -95,13 +121,24 @@ class Train:
 
 
 	def log_data(self, it, phase, loss, acc):
+		""" 
+		save the logs for validation or training 
+		Args:
+			it: iteration
+			phase: training or validation
+			loss: loss value
+			acc: accuracy value
+		"""
 		root = self.params['root_dir']
+		# if train phase
 		if phase == 'train':
 			self.tr_logs['it'].append(it)
 			self.tr_logs['loss'].append(loss)
 			self.tr_logs['acc'].append(acc)
 			np.savez(os.path.join(root,'output/%s/logs/train.npz' % self.run_name),
 					it=self.tr_logs['it'], loss=self.tr_logs['loss'], acc=self.tr_logs['acc'])
+
+		# if test phase
 		if phase == 'val':
 			self.val_logs['it'].append(it)
 			self.val_logs['loss'].append(loss)
@@ -113,6 +150,11 @@ class Train:
 
 
 	def validate(self, it):
+		""" 
+		Validate on validation set 
+		args:
+			it: current training iteration
+		"""
 		self.model.eval()
 
 		val_loss = 0.0
@@ -143,10 +185,14 @@ class Train:
 
 
 	def train(self):
+		""" 
+		Run training on training set 
+		"""
 		it = 0
 		for ep in range(self.num_epochs):
 			self.model.train()
 				
+			# iterate trhough training batches
 			for data in self.dataloader['train']:
 				it += 1
 
@@ -182,24 +228,24 @@ class Train:
 			if (ep+1)%self.params['save_freq'] == 0:
 				torch.save(self.model, 'output/{}/weights/model_{}.pt'.format(self.params['run_name'],ep))
 
+			# do validation end of each epoch
 			self.validate(it)
 
 
 if __name__ == '__main__':
-	transform = transforms.Resize((200,200),interpolation=Image.NEAREST)
-
 	params = {'root_dir': os.path.dirname(os.path.realpath(__file__)),
-			  'run_name': 'rgb_depth_64_1e-4',
+			  'run_name': 'rgb_depth_64_3e-4',
 			  'batch_size':100,
 			  'val_split': 0.2,
-			  'height': 480,
-			  'width': 640,
-			  'lr': 1e-4,
+			  'height': 200,
+			  'width': 200,
+			  'lr': 3e-4,
 			  'num_epochs': 10000,
 			  'save_freq': 20,
 			  'disp': True,
 			  'threshold': 0.5,
-			  'use_depth': True}
+			  'use_depth': True,
+			  'transform': True}
 
 	trainer = Train(params)
 	trainer.train()

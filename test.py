@@ -11,15 +11,15 @@ from PIL import Image
 
 if torch.cuda.is_available():
 	print("using cuda")
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cpu")
 
 class Test:
 	def __init__(self, params):
 		self.params = params
 		self.run_name = params['run_name']
 		
-		self.dataset = SuctionData(params['root_dir'],mode='test')
+		self.dataset = SuctionData(params['root_dir'],mode='test',transform=params['transform'])
 		self.dataloader = data.DataLoader(self.dataset, batch_size=1)
 		self.model = SuctionNet(params['height'],params['width'])
 		self.model = torch.load('output/{}/weights/model_{}.pt'.format(params['run_name'],params['load_ep']))
@@ -33,6 +33,13 @@ class Test:
 
 
 	def save_img(self,it,rgb,probs):
+		"""
+		save the test heatmaps
+		args:
+			it: index
+			rgb: color image (to overlay)
+			probs: network output probabilities
+		"""
 		root = self.params['root_dir']
 		print(probs.shape)
 		n,_,h,w = probs.shape
@@ -53,6 +60,9 @@ class Test:
 
 
 	def test(self):
+		"""
+		generate output for test data
+		"""
 		total_acc = 0.0
 		it = 0.0
 		for data in self.dataloader:
@@ -73,13 +83,17 @@ class Test:
 
 
 if __name__ == '__main__':
+
+	transform = transforms.Resize((200,200),interpolation=Image.NEAREST)
 	params = {'root_dir': os.path.dirname(os.path.realpath(__file__)),
-			  'run_name': 'rgb_depth_16_1e-4',
-			  'load_ep': 1499,
+			  'run_name': 'rgb_depth_64_1e-3',
+			  'load_ep': 879,
 			  'height': 480,
 			  'width': 640,
 			  'threshold': 0.5,
-			  'use_depth': True}
+			  'use_depth': True,
+			  'transform': transform
+			  }
 
 	test = Test(params)
 	test.test()
