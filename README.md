@@ -26,9 +26,9 @@ Given more time I would try the following things:
 ### Test:
 
 * modify params in test.py
-	** select which training run_name to load the model from
-	** select which checkpoint epoch_number to load the model for
+	* select which training run_name to load the model from
+	* select which checkpoint epoch_number to load the model for
 * Run: 'python test.py'
 * output is generated in the 'test' folder for corresponding run folder in:
-	** 'output/[run_name]/test'
+	* 'output/[run_name]/test'
 
