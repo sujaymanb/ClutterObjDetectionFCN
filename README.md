@@ -4,9 +4,7 @@ I use a fully convolutional network (FCN) style architecture with two trunks/inp
 
 The model is trained using the BCE (Binary cross entropy) loss, basically classifying the pixels as pick/dont pick classes with probabilities for pick.
 
-Data augmentation:::
-
-Modalities: I tried using just RGB as well but found that performance was slightly better with RGB + depth.
+Modalities: Both RGB and depth are used.
 
 ## Things to try
 
@@ -15,20 +13,24 @@ Given more time I would try the following things:
 * Data preprocessing: Resize, crop the data
 * Data augmentation: add some noise, rotations, etc to augment datset
 * Different architectures: try U-net architectures
+* Hyperparameter Tuning
 
 ## Running Instructions
 
 ### Train:
 
 * modify params in train.py
-* Run: 'python train.py'
+* Run: `python train.py`
 
 ### Test:
 
 * modify params in test.py
 	* select which training run_name to load the model from
 	* select which checkpoint epoch_number to load the model for
-* Run: 'python test.py'
+* Run: `python test.py`
 * output is generated in the 'test' folder for corresponding run folder in:
-	* 'output/[run_name]/test'
+	* `output/[run_name]/test`
 
+## References
+
+Zeng et al. "Robotic pick-and-place of novel objects in clutter with multi-affordance grasping and cross-domain image matching." 2018 IEEE international conference on robotics and automation (ICRA). IEEE, 2018.
