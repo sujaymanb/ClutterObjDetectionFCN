@@ -234,18 +234,18 @@ class Train:
 
 if __name__ == '__main__':
 	params = {'root_dir': os.path.dirname(os.path.realpath(__file__)),
-			  'run_name': 'rgb_depth_64_3e-4',
+			  'run_name': 'rgb_depth_32_1e-4',
 			  'batch_size':100,
 			  'val_split': 0.2,
-			  'height': 200,
-			  'width': 200,
-			  'lr': 3e-4,
+			  'height': 480,
+			  'width': 640,
+			  'lr': 1e-4,
 			  'num_epochs': 10000,
 			  'save_freq': 20,
-			  'disp': True,
+			  'disp': False,
 			  'threshold': 0.5,
 			  'use_depth': True,
-			  'transform': True}
+			  'transform': False}
 
 	trainer = Train(params)
 	trainer.train()

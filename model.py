@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class SuctionNet(nn.Module):
-    def __init__(self, h, w, ch=16):
+    def __init__(self, h, w, ch=32):
         super(SuctionNet, self).__init__()
         self.rgb_trunk = nn.Sequential(nn.Conv2d(3, ch, 5, 2),
                                         nn.ReLU(True),

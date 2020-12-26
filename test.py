@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 from PIL import Image
+from torchvision import transforms
 
 if torch.cuda.is_available():
 	print("using cuda")
@@ -18,15 +19,28 @@ class Test:
 	def __init__(self, params):
 		self.params = params
 		self.run_name = params['run_name']
-		
-		self.dataset = SuctionData(params['root_dir'],mode='test',transform=params['transform'])
+
+		# transform input and output
+		if params['transform']:
+			self.transform = transforms.Resize((params['width'],params['height']),
+								interpolation=Image.NEAREST)
+			self.untransform = transform = transforms.Resize((params['actual_h'],params['actual_w']),
+								interpolation=Image.NEAREST)
+		else:
+			self.transform = None
+
+		# load test dataset
+		self.dataset = SuctionData(params['root_dir'],mode='test',transform=self.transform)
 		self.dataloader = data.DataLoader(self.dataset, batch_size=1)
+		
+		# load saved model
 		self.model = SuctionNet(params['height'],params['width'])
 		self.model = torch.load('output/{}/weights/model_{}.pt'.format(params['run_name'],params['load_ep']))
 		self.model.eval()
 		self.sigmoid = nn.Sigmoid()
 
 		self.use_depth = params['use_depth']
+		self.overlay = params['overlay']
 
 		if not os.path.exists(os.path.join(params['root_dir'],'output',params['run_name'],'test')):
 			os.mkdir(os.path.join(params['root_dir'],'output',params['run_name'],'test'))
@@ -51,11 +65,15 @@ class Test:
 			colormap = plt.get_cmap('jet')
 			heatmap = colormap(prob)[:,:,:3]
 			print(rgb_img.shape, heatmap.shape)
-			overlay = (rgb_img * 0.5) + (heatmap * 0.5)
+
+			if self.overlay:
+				img = (rgb_img * 0.5) + (heatmap * 0.5)
+			else:
+				img = prob
 
 			#plt.imshow(overlay)
 			#plt.show()
-			Image.fromarray((overlay * 255).astype(np.uint8)).save(
+			Image.fromarray((img * 255).astype(np.uint8)).save(
 							os.path.join(root,'output/{}/test/{}.png'.format(self.run_name,int(it))))
 
 
@@ -77,22 +95,27 @@ class Test:
 				outputs = self.model(rgb, depth)
 			else:
 				outputs = self.model(rgb)
-			probs = self.sigmoid(outputs).cpu().detach().numpy()
 
+			if self.transform:
+				outputs = self.untransform(outputs)
+				rgb = self.untransform(rgb)
+
+			probs = self.sigmoid(outputs).cpu().detach().numpy()
 			self.save_img(it,rgb.cpu().detach().numpy(),probs)
 
 
 if __name__ == '__main__':
-
-	transform = transforms.Resize((200,200),interpolation=Image.NEAREST)
 	params = {'root_dir': os.path.dirname(os.path.realpath(__file__)),
-			  'run_name': 'rgb_depth_64_1e-3',
-			  'load_ep': 879,
+			  'run_name': 'rgb_depth_32_1e-4',
+			  'load_ep': 1499,
 			  'height': 480,
 			  'width': 640,
+			  'actual_h': 480,
+			  'actual_w': 640,
 			  'threshold': 0.5,
 			  'use_depth': True,
-			  'transform': transform
+			  'transform': False,
+			  'overlay': False
 			  }
 
 	test = Test(params)
