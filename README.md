@@ -2,7 +2,7 @@
 
 I use a fully convolutional network (FCN) style architecture with two trunks/inputs for the RGB and depth respectively. The encoder has 4 layers (32 filters of size 5, stride of 2 for the first 3 layers and stride 1 for the final layer). The features for the RGB and depth are concatenated channelwise and we interleave 2 conv layers with bilinear upsampling to construct the heatmaps.
 
-The model is trained using the BCE (Binary cross entropy) loss, basically classifying the pixels as pick/dont pick classes with probabilities for pick.
+The model is trained using the BCE (Binary cross entropy) loss, classifying the pixels with probabilities for pick.
 
 Modalities: Both RGB and depth are used.
 
@@ -11,9 +11,9 @@ Modalities: Both RGB and depth are used.
 Given more time I would try the following things:
 
 * Data preprocessing: Resize, crop the data
-* Data augmentation: add some noise, rotations, etc to augment datset
+* Data augmentation: add some noise, rotations, brightness etc to augment datset
 * Different architectures: try U-net architectures
-* Hyperparameter Tuning
+* Hyperparameter Tuning: learning rate, conv layer params (num filters, etc)
 
 ## Running Instructions
 
