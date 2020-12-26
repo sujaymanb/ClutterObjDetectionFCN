@@ -10,8 +10,8 @@ Modalities: Both RGB and depth are used.
 
 Given more time I would try the following things:
 
-* Data preprocessing: Resize, crop the data
-* Data augmentation: add some noise, rotations, brightness etc to augment datset
+* Data preprocessing: Resize (downsample), crop the data
+* Data augmentation: add some noise, rotations, brightness, random cropping, etc to augment datset 
 * Different architectures: try U-net architectures
 * Hyperparameter Tuning: learning rate, conv layer params (num filters, etc)
 
