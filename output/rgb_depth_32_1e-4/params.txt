@@ -1,0 +1,1 @@
+{"root_dir": "/home/sujaybajracharya/nimble/suction/suction-challenge-master", "run_name": "rgb_depth_64_1e-4", "batch_size": 100, "val_split": 0.2, "height": 480, "width": 640, "lr": 0.0001, "num_epochs": 10000, "save_freq": 20, "disp": true, "threshold": 0.5, "use_depth": true}
